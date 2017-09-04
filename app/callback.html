@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<HEAD>
+<script src="./scripts/gluu.js"></script>
+
+<script>
+    //alert("callback");
+ 
+    var code = GLUU.getCode();
+    if(code)
+    {
+      sessionStorage.setItem('access_code', code);
+    }
+    else
+    {
+      console.log("No access code found!");
+    }
+   
+    
+    window.location.assign('/');
+    
+  </script>
+</HEAD>
+
+<BODY>
+ </BODY>
+
+</HTML>

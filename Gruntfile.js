@@ -49,10 +49,10 @@ module.exports = function(grunt) {
      // The actual grunt server settings
     connect: {
         options: {
-            port:  9002,
+            port:  9000,
             hostname: 'localhost',
             livereload: 35729,
-            open:'http://<%= connect.options.hostname %>:<%= connect.options.port %>?baseApiUrl=https://demo.openmf.org'
+            open:'http://<%= connect.options.hostname %>:<%= connect.options.port %>?baseApiUrl=https://localhost:8443/fineract-provider'
         },
         livereload: {
             options: {

@@ -1,7 +1,7 @@
 (function (module) {
     mifosX.controllers = _.extend(module, {
-        ProfileController: function (scope, localStorageService, resourceFactory, $uibModal) {
-            scope.userDetails = localStorageService.getFromLocalStorage('userData');
+        ProfileController: function (scope, webStorage, resourceFactory, $modal) {
+            scope.userDetails = webStorage.get('userData');
             resourceFactory.userListResource.get({userId: scope.userDetails.userId}, function (data) {
                 scope.user = data;
             });
@@ -35,7 +35,7 @@
             };
         }
     });
-    mifosX.ng.application.controller('ProfileController', ['$scope', 'localStorageService', 'ResourceFactory', '$uibModal', mifosX.controllers.ProfileController]).run(function ($log) {
+    mifosX.ng.application.controller('ProfileController', ['$scope', 'webStorage', 'ResourceFactory', '$uibModal', mifosX.controllers.ProfileController]).run(function ($log) {
         $log.info("ProfileController initialized");
     });
 }(mifosX.controllers || {}));

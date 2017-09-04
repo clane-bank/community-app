@@ -2,7 +2,7 @@
 (function (mifosX) {
     var defineHeaders = function ($httpProvider, $translateProvider, ResourceFactoryProvider, HttpServiceProvider, $idleProvider, $keepaliveProvider, IDLE_DURATION, WARN_DURATION, KEEPALIVE_INTERVAL) {
         var mainLink = getLocation(window.location.href);
-        var baseApiUrl = "https://demo.openmf.org";
+        var baseApiUrl = "https://localhost:8443";
         var host = "";
         var portNumber = "";
         //accessing from openmf server
@@ -26,9 +26,6 @@
         }
         //accessing from a file system or other servers
         else {
-            if (mainLink.hostname != "") {
-                baseApiUrl = "https://" + mainLink.hostname + (mainLink.port ? ':' + mainLink.port : '');
-            }
 
             if (QueryParameters["baseApiUrl"]) {
                 baseApiUrl = QueryParameters["baseApiUrl"];
@@ -60,7 +57,7 @@
         // Configure i18n and preffer language
         //$translateProvider.translations('en', translationsEN);
         //$translateProvider.translations('de', translationsDE);
-        $translateProvider.useSanitizeValueStrategy('escaped');
+
         $translateProvider.useStaticFilesLoader({
             prefix: 'global-translations/locale-',
             suffix: '.json'

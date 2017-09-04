@@ -1,7 +1,32 @@
 (function (module) {
     mifosX.controllers = _.extend(module, {
-        MainController: function (scope, location, sessionManager, translate, $rootScope, localStorageService, keyboardManager, $idle, tmhDynamicLocale,
-                  uiConfigService, $http) {
+        MainController: function (scope, location, sessionManager, translate, $rootScope, localStorageService, keyboardManager, $idle, tmhDynamicLocale, 
+                  uiConfigService, $http, authenticationService, LOGOUT_WHEN_RELOAD, SECURITY) {
+      
+            scope.gluuLogin = (SECURITY === 'gluu');
+
+            if(SECURITY === 'gluu' && sessionStorage['access_code'])
+            {
+              scope.load = true;
+              authenticationService.authenticateWithAccessCode();
+            }
+          
+            scope.$on("UserAuthenticationFailureEvent", function (event, data, status) {
+              
+              scope.authenticationFailed = true;
+              if(status != 401) {
+                  scope.authenticationErrorMessage = 'error.connection.failed';
+                  scope.load = false;
+              } else {
+                 scope.authenticationErrorMessage = 'error.login.failed';
+                 scope.load = false;
+              }
+          });
+
+          scope.$on("UserAuthenticationSuccessEvent", function (event, data) {
+              scope.load = false;
+           });
+            
             $http.get('release.json').success(function(data) {
                 scope.version = data.version;
                 scope.releasedate = data.releasedate;
@@ -44,13 +69,6 @@
                     }
                 });
             }
-
-            scope.$on('scrollbar.show', function(){
-                  console.log('Scrollbar show');
-                });
-            scope.$on('scrollbar.hide', function(){
-                  console.log('Scrollbar hide');
-                });
 
             uiConfigService.init();
             //hides loader
@@ -135,7 +153,10 @@
 
             // Log out the user when the window/tab is closed.
             window.onunload = function () {
-                scope.logout();
+                if(LOGOUT_WHEN_RELOAD)  
+                {
+                   //scope.logout();
+                }
                 $idle.unwatch();
                 scope.started = false;
             };
@@ -175,7 +196,7 @@
                     value: "groups"
                 };
                 var savings = {name: "label.input.adhoc.search.loans", value: "loans"};
-                var shares = {name: "label.search.scope.shares", value: "shares"};
+				var shares = {name: "label.search.scope.shares", value: "shares"};
                 var loans = {name: "label.search.scope.savings", value: "savings"};
                 scope.searchScopes = [all,clients,groups,loans,savings,shares];
                 scope.currentScope = all;
@@ -202,14 +223,14 @@
                 location.path('/search/' + searchString).search({exactMatch: exactMatch, resource: scope.currentScope.value});
 
             };
-            scope.text = '<span>Mifos X is designed by the <a href="http://www.openmf.org/">Mifos Initiative</a>.' +
+            scope.text = '<span>Core Banking is designed by the <a href="http://www.openmf.org/">Mifos Initiative</a>.' +
             '<a href="http://mifos.org/resources/community/"> A global community </a> that aims to speed the elimination of poverty by enabling Organizations to more effectively and efficiently deliver responsible financial services to the world’s poor and unbanked </span><br/>' +
             '<span>Sounds interesting?<a href="http://mifos.org/take-action/volunteer/"> Get involved!</a></span>';
 
             scope.logout = function () {
-                scope.currentSession = sessionManager.clear();
+                authenticationService.removeUserData();
+                scope.currentSession = sessionManager.removeSession();
                 scope.resetPassword = false;
-                location.path('/').replace();
             };
 
             scope.langs = mifosX.models.Langs;
@@ -225,7 +246,6 @@
                 scope.optlang = scope.langs[0];
                 tmhDynamicLocale.set(scope.langs[0].code);
                 }
-            console.log(translate.use);
             translate.use(scope.optlang.code);
 
             scope.isActive = function (route) {
@@ -353,7 +373,7 @@
                 "https://mifosforge.jira.com/wiki/pages/viewpage.action?pageId=67895308","https://mifosforge.jira.com/wiki/display/docs/Add+Journal+Entries",
                 "https://mifosforge.jira.com/wiki/dosearchsite.action?queryString=search%20journal%20entries&startIndex=0&where=docs",  "https://mifosforge.jira.com/wiki/dosearchsite.action?queryString=accounts%20linked&startIndex=0&where=docs",
                 "https://mifosforge.jira.com/wiki/display/docs/Chart+of+Accounts+and+General+Ledger+Setup", "https://mifosforge.jira.com/wiki/display/docs/Closing+Entries",
-                "https://mifosforge.jira.com/wiki/pages/viewpage.action?pageId=67895308","https://mifosforge.jira.com/wiki/display/docs/Accruals"];
+                "https://mifosforge.jira.com/wiki/pages/viewpage.action?pageId=67895308","https://mifosforge.jira.com/wiki/display/docs/Accruals"]; 
             // array is huge, but working good
             // create second array with address models
             var addrmodels = ['/users/','/organization','/system','/products','/templates', '', '/accounting',
@@ -363,27 +383,27 @@
                                 '/savingproducts','/charges','/productmix', '/fixeddepositproducts','/recurringdepositproducts','/freqposting',
                                 '/journalentry','/searchtransaction','/financialactivityaccountmappings','/accounting_coa', '/accounts_closure','/accounting_rules','/run_periodic_accrual'];
             // * text-based address-recognize system *
-            var actualadr = location.absUrl();  // get full URL
+            var actualadr = location.absUrl();  // get full URL     
             var lastchar = 0;
             for( var i = 0; i<actualadr.length;i++)
                 {
-
+                    
                     if(actualadr.charAt(i) == '#')
                     {
-                        lastchar = i+1;
+                        lastchar = i+1;                     
                         break;
                         // found '#' and save position of it
                     }
                 }//for
-
+            
             var whereweare = actualadr.substring(lastchar); // cut full URL to after-'#' part
-
+            
             // string after '#' is compared with model
             var addrfound = false;
             if(whereweare == '/reports/all' || whereweare == '/reports/clients' || whereweare == '/reports/loans' || whereweare == '/reports/savings' || whereweare == '/reports/funds' || whereweare == '/reports/accounting' || whereweare == '/xbrl'  )
                      {
                         window.open(addresses[5]);
-                        addrfound = true;
+                        addrfound = true;                   
                      }// '/reports/...' are exception -> link to Search in Documentation word 'report'
                      else{
                             for(var i = 0; i< addrmodels.length; i++)
@@ -394,16 +414,16 @@
                                         {
                                                 addrfound = true;
                                                 window.open(addresses[i]);
-                                                break;
+                                                break;          
                                                 // model found -> open address and break
                                         }
-                                    }
+                                    }                               
                             }//for
                           }//else
                 if(addrfound == false) window.open(addresses[10]); // substring not matching to any model -> open start user manual page
-
+            
             };//helpf
-
+            
             sessionManager.restore(function (session) {
                 scope.currentSession = session;
                 scope.start(scope.currentSession);
@@ -426,6 +446,9 @@
         'tmhDynamicLocale',
         'UIConfigService',
         '$http',
+        'AuthenticationService',
+        'LOGOUT_WHEN_RELOAD',
+        'SECURITY',
         mifosX.controllers.MainController
     ]).run(function ($log) {
         $log.info("MainController initialized");
